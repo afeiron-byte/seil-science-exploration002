@@ -7,30 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f3f4f6;
-        }
-        /* 스크롤바 숨기기 (텍스트 영역 자동 크기 조절 시 깔끔하게) */
-        textarea::-webkit-scrollbar {
-            display: none;
-        }
-        /* PDF 인쇄(A4) 최적화 스타일 */
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; }
+        textarea::-webkit-scrollbar { display: none; }
         @media print {
-            body { 
-                background-color: white; 
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
+            body { background-color: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { size: A4; margin: 0; }
             .print-hide { display: none !important; }
             .a4-container {
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 15mm 20mm !important; /* 인쇄 여백 */
-                width: 100% !important;
-                height: 100vh !important;
-                page-break-after: avoid;
+                box-shadow: none !important; margin: 0 !important; padding: 15mm 20mm !important; 
+                width: 100% !important; height: 100vh !important; page-break-after: avoid;
             }
         }
     </style>
@@ -41,13 +26,11 @@
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full border-t-4 border-red-700">
             <div class="text-center mb-6">
-                <!-- 로그인 화면 세일고 로고 -->
                 <img src="세일고CI-01.png" alt="세일고 로고" class="w-24 h-24 mx-auto mb-4 drop-shadow-md">
                 <h1 class="text-2xl font-bold text-gray-800">과학탐구일지 시스템</h1>
             </div>
             
             <div class="space-y-4 mt-8">
-                <!-- 플레이스홀더 텍스트 변경됨 -->
                 <input type="text" id="loginId" placeholder="아이디" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 bg-gray-50">
                 <input type="password" id="loginPw" placeholder="비밀번호" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 bg-gray-50">
                 
@@ -64,10 +47,9 @@
         </div>
     </div>
 
-    <!-- 2. 탐구일지 작성 화면 (A4 사이즈) -->
+    <!-- 2. 탐구일지 작성 화면 -->
     <div id="mainScreen" class="hidden min-h-screen py-8 print:py-0 print:bg-white">
-        
-        <!-- 상단 컨트롤 패널 (인쇄 시 숨김) -->
+        <!-- 상단 컨트롤 패널 -->
         <div class="max-w-[210mm] mx-auto flex justify-between items-center mb-4 print-hide px-4">
             <div class="bg-white px-4 py-2 rounded-full shadow-sm text-sm font-bold text-red-700 border border-red-100">
                 작성자: <span id="currentUser" class="text-gray-800"></span>
@@ -81,14 +63,12 @@
         <!-- A4 용지 컨테이너 -->
         <div class="a4-container bg-white shadow-2xl mx-auto p-[20mm] relative flex flex-col" style="width: 210mm; min-height: 297mm; box-sizing: border-box;">
             
-            <!-- 문서 제목 -->
             <div class="text-center mb-8 border-b-4 border-gray-800 pb-4">
                 <h1 class="text-4xl font-black tracking-widest text-gray-900">과학탐구일지</h1>
             </div>
 
             <!-- 입력 폼 시작 -->
             <div class="space-y-6 text-[15px] flex-grow">
-                
                 <!-- 1. 기본 기록 -->
                 <div>
                     <div class="grid grid-cols-2 gap-y-4 gap-x-2 items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -121,33 +101,20 @@
                         <col class="w-3/4">
                     </colgroup>
                     <tbody>
-                        <!-- 3. 탐구 및 탐구 결과 -->
                         <tr>
-                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">
-                                3. 탐구 및<br><span class="pl-5">탐구 결과</span>
-                            </th>
-                            <td class="border border-gray-400 p-0">
-                                <textarea id="resultContent" class="w-full h-full min-h-[150px] p-3 focus:outline-none resize-none" placeholder="탐구 과정 및 결과를 상세히 기록하세요." oninput="autoResize(this)"></textarea>
-                            </td>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">3. 탐구 및<br><span class="pl-5">탐구 결과</span></th>
+                            <td class="border border-gray-400 p-0"><textarea id="resultContent" class="w-full h-full min-h-[150px] p-3 focus:outline-none resize-none" oninput="autoResize(this)"></textarea></td>
                         </tr>
-                        <!-- 4. 특이사항 -->
                         <tr>
-                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">
-                                4. 특이사항
-                            </th>
-                            <td class="border border-gray-400 p-0">
-                                <textarea id="specialNote" class="w-full h-full min-h-[100px] p-3 focus:outline-none resize-none" placeholder="오차 원인, 새롭게 알게 된 점 등을 기록하세요." oninput="autoResize(this)"></textarea>
-                            </td>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">4. 특이사항</th>
+                            <td class="border border-gray-400 p-0"><textarea id="specialNote" class="w-full h-full min-h-[100px] p-3 focus:outline-none resize-none" oninput="autoResize(this)"></textarea></td>
                         </tr>
-                        <!-- 5. 주요 활동 사진 -->
                         <tr>
-                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">
-                                5. 주요 활동<br><span class="pl-5">사진</span>
-                            </th>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">5. 주요 활동<br><span class="pl-5">사진</span></th>
                             <td class="border border-gray-400 p-3">
                                 <input type="file" id="photoInput" accept="image/*" class="mb-2 print-hide block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 cursor-pointer">
                                 <div id="photoPreview" class="w-full min-h-[220px] flex items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden relative">
-                                    <span class="text-gray-400 print-hide">사진을 첨부하면 여기에 표시됩니다</span>
+                                    <span class="text-gray-400 print-hide">사진 첨부 시 표시</span>
                                     <img id="imageDisplay" class="absolute hidden max-w-full max-h-full object-contain">
                                 </div>
                             </td>
@@ -156,7 +123,7 @@
                 </table>
             </div>
 
-            <!-- 세일고등학교 로고 및 명칭 (홈페이지 화면 및 출력물 우측 하단 고정) -->
+            <!-- 세일고등학교 로고 -->
             <div class="mt-8 flex justify-end items-center space-x-3 pt-4">
                 <img src="세일고CI-01.png" alt="세일고등학교 마크" class="w-10 h-10">
                 <span class="font-black text-2xl tracking-widest text-gray-900 font-serif">세일고등학교</span>
@@ -164,7 +131,7 @@
 
         </div>
 
-        <!-- 저장 버튼 (인쇄 시 숨김) -->
+        <!-- 저장 버튼 -->
         <div class="mt-8 text-center print-hide pb-10">
             <button onclick="saveData()" id="saveBtn" class="bg-red-700 text-white px-10 py-4 rounded-xl font-bold shadow-lg hover:bg-red-800 transition text-lg flex items-center justify-center mx-auto">
                 <span id="saveBtnText">구글 스프레드시트에 저장하기</span>
@@ -174,16 +141,14 @@
     </div>
 
     <script>
-        // ★★★ 여기에 선생님의 Google Apps Script 웹앱 URL을 붙여넣으세요 ★★★
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCCu97-Nelg4e4UTB_l9ChCdozAnGYKafIpdMG2eRxlVpt6l3a7wBER2LbW4Mzdhmu/exec"; 
+        // ★★★ 방금 새로 배포하고 얻은 새 URL을 여기에 꼭 붙여넣으세요! ★★★
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7LdBnIXE-JAxno-tOFqJwHjhkM8-U0mvPbvEfEpJSVjZoy421LbCO_8DKjhoMWWu6/exec"; 
 
-        // 자동 높이 조절 함수
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        // 로그인 처리
         async function handleLogin() {
             const id = document.getElementById('loginId').value;
             const pw = document.getElementById('loginPw').value;
@@ -193,7 +158,7 @@
             const btnText = document.getElementById('loginBtn');
 
             if (!id || !pw || !stuId || !name) {
-                errorMsg.textContent = "모든 항목(아이디, 비밀번호, 학번, 이름)을 입력해주세요.";
+                errorMsg.textContent = "모든 항목을 입력해주세요.";
                 errorMsg.classList.remove('hidden');
                 return;
             }
@@ -203,24 +168,33 @@
             btnText.disabled = true;
 
             try {
+                // 데이터를 URLSearchParams 형태로 확실하게 묶어서 보냄 (CORS 방지)
+                const formData = new URLSearchParams();
+                formData.append('action', 'login');
+                formData.append('id', id);
+                formData.append('pw', pw);
+
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: new URLSearchParams({ action: 'login', id: id, pw: pw })
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
                 });
                 
                 const result = await response.json();
 
                 if (result.success) {
-                    // 로그인 성공 시 화면 전환
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('mainScreen').classList.remove('hidden');
                     document.getElementById('currentUser').textContent = `${stuId} ${name}`;
                 } else {
-                    errorMsg.textContent = "아이디 또는 비밀번호가 일치하지 않습니다.";
+                    errorMsg.textContent = result.error || "아이디 또는 비밀번호가 일치하지 않습니다.";
                     errorMsg.classList.remove('hidden');
                 }
             } catch (error) {
-                errorMsg.textContent = "서버 연결에 실패했습니다. (URL을 확인해주세요)";
+                console.error("Login Error:", error);
+                errorMsg.textContent = "서버 연결 실패. 개발자 도구(F12) 콘솔을 확인하세요.";
                 errorMsg.classList.remove('hidden');
             } finally {
                 btnText.textContent = "접속하기";
@@ -228,7 +202,6 @@
             }
         }
 
-        // 이미지 압축 및 미리보기 로직
         let compressedImageData = "";
         document.getElementById('photoInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -247,16 +220,12 @@
                         height = Math.round((height * MAX_WIDTH) / width);
                         width = MAX_WIDTH;
                     }
-
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
-                    // 용량 최적화를 위해 JPEG 품질 0.7로 압축
                     compressedImageData = canvas.toDataURL('image/jpeg', 0.7);
                     
-                    // 화면에 이미지 표시
                     const imgDisplay = document.getElementById('imageDisplay');
                     imgDisplay.src = compressedImageData;
                     imgDisplay.classList.remove('hidden');
@@ -266,7 +235,6 @@
             reader.readAsDataURL(file);
         });
 
-        // 데이터 저장
         async function saveData() {
             const btn = document.getElementById('saveBtn');
             const msg = document.getElementById('saveMsg');
@@ -275,35 +243,38 @@
             btn.disabled = true;
             msg.classList.add('hidden');
 
-            const data = {
-                action: 'save',
-                author: document.getElementById('currentUser').textContent,
-                sessionDate: document.getElementById('sessionDate').value,
-                temp: document.getElementById('temp').value,
-                humidity: document.getElementById('humidity').value,
-                weather: document.getElementById('weather').value,
-                activityContent: document.getElementById('activityContent').value,
-                resultContent: document.getElementById('resultContent').value,
-                specialNote: document.getElementById('specialNote').value,
-                photo: compressedImageData
-            };
+            const formData = new URLSearchParams();
+            formData.append('action', 'save');
+            formData.append('author', document.getElementById('currentUser').textContent);
+            formData.append('sessionDate', document.getElementById('sessionDate').value);
+            formData.append('temp', document.getElementById('temp').value);
+            formData.append('humidity', document.getElementById('humidity').value);
+            formData.append('weather', document.getElementById('weather').value);
+            formData.append('activityContent', document.getElementById('activityContent').value);
+            formData.append('resultContent', document.getElementById('resultContent').value);
+            formData.append('specialNote', document.getElementById('specialNote').value);
+            formData.append('photo', compressedImageData);
 
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: new URLSearchParams(data)
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    msg.textContent = "구글 스프레드시트에 성공적으로 저장되었습니다!";
+                    msg.textContent = "성공적으로 저장되었습니다!";
                     msg.className = "mt-2 text-sm font-bold text-green-600 block";
                 } else {
                     throw new Error("저장 실패");
                 }
             } catch (error) {
-                msg.textContent = "저장 중 오류가 발생했습니다. 다시 시도해주세요.";
+                console.error("Save Error:", error);
+                msg.textContent = "저장 중 오류가 발생했습니다.";
                 msg.className = "mt-2 text-sm font-bold text-red-600 block";
             } finally {
                 btn.textContent = "구글 스프레드시트에 저장하기";
