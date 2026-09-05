@@ -90,28 +90,29 @@
                     </div>
                 </div>
 
-                <!-- 2. 탐구 활동 내용 -->
-                <div>
-                    <h2 class="font-bold text-lg mb-2 flex items-center"><span class="bg-red-700 text-white w-6 h-6 rounded-full inline-flex items-center justify-center mr-2 text-sm">2</span>탐구 활동 내용</h2>
-                    <input type="text" id="activityContent" class="w-full border-b-2 border-gray-300 p-2 focus:outline-none focus:border-red-700" placeholder="오늘의 탐구 활동 내용을 한두 줄로 간략히 작성하세요.">
-                </div>
-
-                <!-- 3, 4, 5 항목 테이블 구조 -->
+                <!-- 2, 3, 4, 5 항목 테이블 구조 (2번 항목 셀로 통합) -->
                 <table class="w-full border-collapse border-2 border-gray-800 table-fixed">
                     <colgroup>
                         <col class="w-[28%]">
                         <col class="w-[72%]">
                     </colgroup>
                     <tbody>
+                        <!-- 2. 탐구 활동 내용 -->
+                        <tr>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">2. 탐구 활동 내용</th>
+                            <td class="border border-gray-400 p-0"><textarea id="activityContent" class="w-full block min-h-[80px] p-3 focus:outline-none resize-none overflow-hidden" oninput="autoResize(this)" placeholder="오늘의 탐구 활동 내용을 작성하세요."></textarea></td>
+                        </tr>
+                        <!-- 3. 탐구 및 탐구 결과 -->
                         <tr>
                             <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">3. 탐구 및<br><span class="pl-5">탐구 결과</span></th>
-                            <td class="border border-gray-400 p-0"><textarea id="resultContent" class="w-full h-full min-h-[150px] p-3 focus:outline-none resize-none" oninput="autoResize(this)"></textarea></td>
+                            <td class="border border-gray-400 p-0"><textarea id="resultContent" class="w-full block min-h-[150px] p-3 focus:outline-none resize-none overflow-hidden" oninput="autoResize(this)" placeholder="탐구 과정 및 결과를 상세히 기록하세요."></textarea></td>
                         </tr>
+                        <!-- 4. 특이사항 -->
                         <tr>
-                            <!-- 4번 명칭 수정 -->
                             <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">4. 특이사항<br><span class="text-[13px] font-normal text-gray-600 block mt-1 leading-tight">(오늘 활동으로 확인한 내용)</span></th>
-                            <td class="border border-gray-400 p-0"><textarea id="specialNote" class="w-full h-full min-h-[100px] p-3 focus:outline-none resize-none" oninput="autoResize(this)"></textarea></td>
+                            <td class="border border-gray-400 p-0"><textarea id="specialNote" class="w-full block min-h-[100px] p-3 focus:outline-none resize-none overflow-hidden" oninput="autoResize(this)" placeholder="오차 원인, 새롭게 알게 된 점 등을 기록하세요."></textarea></td>
                         </tr>
+                        <!-- 5. 주요 활동 사진 -->
                         <tr>
                             <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">5. 주요 활동<br><span class="pl-5">사진</span></th>
                             <td class="border border-gray-400 p-3">
@@ -143,7 +144,8 @@
             <!-- 세일고등학교 로고 -->
             <div class="mt-8 flex justify-end items-center space-x-3 pt-4">
                 <img src="세일고CI-01.png" alt="세일고등학교 마크" class="w-10 h-10">
-                <span class="font-black text-2xl tracking-widest text-gray-900 font-serif">세일고등학교</span>
+                <!-- 맑은 고딕 볼드체 적용 -->
+                <span class="font-bold text-2xl tracking-widest text-gray-900" style="font-family: 'Malgun Gothic', '맑은 고딕', dotum, sans-serif;">세일고등학교</span>
             </div>
         </div>
     </div>
@@ -151,9 +153,10 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz307tQi-FA_eAlnMSxNgVbZ_LfWa_k8_nn-aYWuBB9xG8CE2lgU7Q4ERiMuXz2R_wD/exec"; 
 
+        // 텍스트 내용에 따라 셀 높이가 자동으로 늘어나는 함수
         function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
+            textarea.style.height = 'auto'; // 높이 초기화
+            textarea.style.height = textarea.scrollHeight + 'px'; // 스크롤 길이에 맞춰 높이 재설정
         }
 
         async function handleLogin() {
@@ -209,7 +212,7 @@
             }
         }
 
-        // 다중 이미지 처리를 위한 로직 수정
+        // 다중 이미지 처리를 위한 로직
         document.querySelectorAll('.photoInput').forEach(input => {
             input.addEventListener('change', function(e) {
                 const file = e.target.files[0];
@@ -222,7 +225,7 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // 해상도 제한 (필요시 조절)
+                        const MAX_WIDTH = 800; // 해상도 조절
                         let width = img.width;
                         let height = img.height;
 
