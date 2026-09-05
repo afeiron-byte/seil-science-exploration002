@@ -61,7 +61,7 @@
         </div>
 
         <!-- A4 용지 컨테이너 -->
-        <div class="a4-container bg-white shadow-2xl mx-auto p-[20mm] relative flex flex-col" style="width: 210mm; min-height: 297mm; box-sizing: border-box;">
+        <div class="a4-container bg-white shadow-2xl mx-auto p-[20mm] relative flex flex-col mb-10" style="width: 210mm; min-height: 297mm; box-sizing: border-box;">
             
             <div class="text-center mb-8 border-b-4 border-gray-800 pb-4">
                 <h1 class="text-4xl font-black tracking-widest text-gray-900">과학탐구일지</h1>
@@ -128,20 +128,10 @@
                 <img src="세일고CI-01.png" alt="세일고등학교 마크" class="w-10 h-10">
                 <span class="font-black text-2xl tracking-widest text-gray-900 font-serif">세일고등학교</span>
             </div>
-
-        </div>
-
-        <!-- 저장 버튼 -->
-        <div class="mt-8 text-center print-hide pb-10">
-            <button onclick="saveData()" id="saveBtn" class="bg-red-700 text-white px-10 py-4 rounded-xl font-bold shadow-lg hover:bg-red-800 transition text-lg flex items-center justify-center mx-auto">
-                <span id="saveBtnText">구글 스프레드시트에 저장하기</span>
-            </button>
-            <p id="saveMsg" class="mt-2 text-sm font-bold hidden"></p>
         </div>
     </div>
 
     <script>
-        // ★★★ 방금 새로 배포하고 얻은 새 URL을 여기에 꼭 붙여넣으세요! ★★★
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz307tQi-FA_eAlnMSxNgVbZ_LfWa_k8_nn-aYWuBB9xG8CE2lgU7Q4ERiMuXz2R_wD/exec"; 
 
         function autoResize(textarea) {
@@ -168,7 +158,6 @@
             btnText.disabled = true;
 
             try {
-                // 데이터를 URLSearchParams 형태로 확실하게 묶어서 보냄 (CORS 방지)
                 const formData = new URLSearchParams();
                 formData.append('action', 'login');
                 formData.append('id', id);
@@ -234,53 +223,6 @@
             };
             reader.readAsDataURL(file);
         });
-
-        async function saveData() {
-            const btn = document.getElementById('saveBtn');
-            const msg = document.getElementById('saveMsg');
-            
-            btn.textContent = "저장 중...";
-            btn.disabled = true;
-            msg.classList.add('hidden');
-
-            const formData = new URLSearchParams();
-            formData.append('action', 'save');
-            formData.append('author', document.getElementById('currentUser').textContent);
-            formData.append('sessionDate', document.getElementById('sessionDate').value);
-            formData.append('temp', document.getElementById('temp').value);
-            formData.append('humidity', document.getElementById('humidity').value);
-            formData.append('weather', document.getElementById('weather').value);
-            formData.append('activityContent', document.getElementById('activityContent').value);
-            formData.append('resultContent', document.getElementById('resultContent').value);
-            formData.append('specialNote', document.getElementById('specialNote').value);
-            formData.append('photo', compressedImageData);
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    msg.textContent = "성공적으로 저장되었습니다!";
-                    msg.className = "mt-2 text-sm font-bold text-green-600 block";
-                } else {
-                    throw new Error("저장 실패");
-                }
-            } catch (error) {
-                console.error("Save Error:", error);
-                msg.textContent = "저장 중 오류가 발생했습니다.";
-                msg.className = "mt-2 text-sm font-bold text-red-600 block";
-            } finally {
-                btn.textContent = "구글 스프레드시트에 저장하기";
-                btn.disabled = false;
-            }
-        }
     </script>
 </body>
 </html>
