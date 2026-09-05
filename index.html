@@ -1,568 +1,315 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>세일고 과학탐구일지</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    
-    /* 인쇄 전용 스타일 (A4 비율 및 불필요한 UI 숨김) */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      .print-area, .print-area * {
-        visibility: visible;
-      }
-      .print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        max-width: 210mm;
-        margin: 0 auto;
-        padding: 0;
-        box-shadow: none !important;
-        border: none !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      /* 인쇄 시 텍스트 영역이 내용에 맞게 보이도록 처리 */
-      textarea {
-        resize: none;
-        overflow: hidden;
-        border: none !important;
-        background: transparent !important;
-      }
-      .page-break {
-        page-break-after: always;
-      }
-    }
-
-    /* 스크롤바 커스텀 */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과학탐구일지 - 세일고등학교</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* 스크롤바 숨기기 (텍스트 영역 자동 크기 조절 시 깔끔하게) */
+        textarea::-webkit-scrollbar {
+            display: none;
+        }
+        /* PDF 인쇄(A4) 최적화 스타일 */
+        @media print {
+            body { 
+                background-color: white; 
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            @page { size: A4; margin: 0; }
+            .print-hide { display: none !important; }
+            .a4-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 15mm 20mm !important; /* 인쇄 여백 */
+                width: 100% !important;
+                height: 100vh !important;
+                page-break-after: avoid;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 h-screen overflow-hidden flex flex-col">
+<body class="text-gray-800">
 
-  <!-- 로그인 화면 -->
-  <div id="loginScreen" class="absolute inset-0 bg-gray-100 flex items-center justify-center z-50">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-      <img src="세일고CI-01.png" alt="세일고 로고" class="w-32 mx-auto mb-6 object-contain" onerror="this.style.display='none'">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">과학탐구일지 시스템</h1>
-      <p class="text-gray-500 mb-8 text-sm">https://script.google.com/macros/s/AKfycby6vuo8ZXiNdsDFbUsARdodf1MzMpiqYcjwamyHln36wi71017wojlbxcn8lQMOP4hH/exec</p>
-      
-      <form id="loginForm" class="flex flex-col gap-3">
-        <input type="text" id="loginId" placeholder="아이디 (기본: seilscience)" class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 text-sm" required />
-        <input type="password" id="loginPw" placeholder="비밀번호" class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 text-sm" required />
-        <div class="flex gap-2">
-          <input type="text" id="studentId" placeholder="학번 (예: 10101)" class="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 text-sm" required />
-          <input type="text" id="authorName" placeholder="이름 (예: 홍길동)" class="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 text-sm" required />
-        </div>
-        
-        <button type="submit" id="loginBtn" class="mt-2 flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white py-3 rounded-lg font-medium transition-colors">
-          <i class="ph ph-sign-in text-xl"></i> 접속하기
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 메인 애플리케이션 화면 -->
-  <div id="mainScreen" class="hidden flex-1 flex h-full">
-    
-    <!-- 왼쪽 사이드바 -->
-    <div class="w-72 bg-white border-r border-gray-200 flex flex-col no-print h-full">
-      <div class="p-4 border-b border-gray-200">
-        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-          <i class="ph-fill ph-file-text text-red-700 text-xl"></i> 탐구일지 목록
-        </h2>
-        <p id="displayAuthor" class="text-sm text-gray-500 mt-1">접속자: </p>
-      </div>
-      
-      <div id="entryList" class="flex-1 overflow-y-auto p-4 space-y-2">
-        <p class="text-center text-gray-400 py-4 text-sm">로딩 중...</p>
-      </div>
-
-      <div class="p-4 border-t border-gray-200 space-y-2">
-        <button id="btnNew" class="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white py-2.5 rounded-md text-sm transition-colors shadow-sm">
-          <i class="ph ph-plus-circle text-lg"></i> 새 일지 작성
-        </button>
-      </div>
-    </div>
-
-    <!-- 메인 편집 영역 -->
-    <div class="flex-1 overflow-y-auto p-8 flex flex-col items-center relative">
-      
-      <!-- 상단 액션 바 -->
-      <div class="w-full max-w-[210mm] flex justify-between items-end mb-4 no-print">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-800">과학탐구일지 편집기</h1>
-          <p class="text-gray-500 text-sm mt-1">저장 후 PDF로 출력할 수 있습니다.</p>
-        </div>
-        <div class="flex gap-2">
-          <button id="btnSave" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-sm transition-colors font-medium">
-            <i class="ph ph-floppy-disk text-lg"></i> 저장하기
-          </button>
-          <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 shadow-sm transition-colors font-medium">
-            <i class="ph ph-printer text-lg"></i> PDF 출력
-          </button>
-          <button id="btnDelete" class="hidden flex items-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 shadow-sm transition-colors">
-            <i class="ph ph-trash text-lg"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- A4 용지 형태의 인쇄 영역 (210mm x 297mm) -->
-      <div class="print-area bg-white shadow-xl w-full max-w-[210mm] min-h-[297mm] flex flex-col border border-gray-300 p-10 relative box-border">
-        
-        <!-- 머리말 -->
-        <div class="text-center mb-6">
-          <h1 class="text-3xl font-bold text-gray-900 tracking-wider mb-6 border-b-2 border-black pb-4">과 학 탐 구 일 지</h1>
-          <div class="flex items-center text-left bg-gray-50 border border-gray-300 rounded p-2">
-            <span class="w-24 font-bold text-gray-800 pl-2">탐구 주제:</span>
-            <input type="text" id="globalTopic" placeholder="전체 탐구 주제를 입력하세요 (모든 페이지 공통)" class="flex-1 bg-transparent border-none focus:outline-none text-gray-800 font-medium p-1">
-          </div>
-        </div>
-
-        <!-- 본문 테이블 레이아웃 -->
-        <div class="flex flex-col flex-1 border-t-2 border-black">
-          
-          <!-- 1. 기본 기록 -->
-          <div class="flex flex-col border-b border-gray-300 py-3 gap-2 text-sm text-gray-800">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="font-bold w-24">1. 기본 기록</span>
-              <span class="font-medium mr-2">탐구 회차/일시 :</span>
-              <input type="text" id="entryRound" class="w-10 border-b border-gray-400 text-center focus:outline-none bg-transparent"> 일차 /
-              <input type="text" id="entryDate" placeholder="O월 O일" class="w-20 border-b border-gray-400 text-center focus:outline-none mx-1 bg-transparent"> 
-              (시간: 
-              <input type="text" id="entryTimeH" class="w-8 border-b border-gray-400 text-center focus:outline-none mx-1 bg-transparent"> :
-              <input type="text" id="entryTimeM" class="w-8 border-b border-gray-400 text-center focus:outline-none mx-1 bg-transparent">)
+    <!-- 1. 로그인 화면 -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full border-t-4 border-red-700">
+            <div class="text-center mb-6">
+                <!-- 로그인 화면 세일고 로고 -->
+                <img src="세일고CI-01.png" alt="세일고 로고" class="w-24 h-24 mx-auto mb-4 drop-shadow-md">
+                <h1 class="text-2xl font-bold text-gray-800">과학탐구일지 시스템</h1>
             </div>
             
-            <div class="flex flex-wrap items-center gap-2 ml-[6.5rem]">
-              <span class="font-medium mr-2">환경 조건 :</span>
-              기온 <input type="text" id="entryTemp" class="w-12 border-b border-gray-400 text-center focus:outline-none mx-1 bg-transparent"> ℃, 
-              습도 <input type="text" id="entryHumidity" class="w-12 border-b border-gray-400 text-center focus:outline-none mx-1 bg-transparent"> %, 
-              기타 특이사항 (날씨 등) <input type="text" id="entryWeather" class="flex-1 min-w-[150px] border-b border-gray-400 focus:outline-none mx-1 bg-transparent">
-            </div>
-          </div>
-
-          <!-- 2. 탐구 활동 내용 -->
-          <div class="flex flex-col border-b border-gray-300 py-3 text-sm">
-            <span class="font-bold w-full mb-2">2. 탐구 활동 내용</span>
-            <textarea id="entryContent" oninput="resizeTextarea(this)" placeholder="활동 내용을 1~2줄 내외로 간략히 작성하세요." class="w-full resize-none focus:outline-none bg-gray-50 p-2 rounded border border-transparent focus:border-gray-200" rows="2"></textarea>
-          </div>
-
-          <!-- 3, 4, 5. 그리드형 레이아웃 영역 (높이 자동 조절) -->
-          <div class="flex-1 flex flex-col border-b-2 border-black">
-            
-            <!-- 3. 탐구 및 결과 -->
-            <div class="flex border-b border-gray-300 min-h-[120px]">
-              <div class="w-32 bg-gray-50 flex items-center justify-center p-2 font-bold text-sm text-center border-r border-gray-300 shrink-0">
-                3. 탐구 및<br/>탐구 결과
-              </div>
-              <div class="flex-1 p-2">
-                <textarea id="entryResults" oninput="resizeTextarea(this)" class="w-full h-full min-h-[100px] resize-none focus:outline-none bg-transparent"></textarea>
-              </div>
-            </div>
-
-            <!-- 4. 특이사항 -->
-            <div class="flex border-b border-gray-300 min-h-[80px]">
-              <div class="w-32 bg-gray-50 flex items-center justify-center p-2 font-bold text-sm text-center border-r border-gray-300 shrink-0">
-                4. 특이사항
-              </div>
-              <div class="flex-1 p-2">
-                <textarea id="entryNotes" oninput="resizeTextarea(this)" class="w-full h-full min-h-[60px] resize-none focus:outline-none bg-transparent"></textarea>
-              </div>
-            </div>
-
-            <!-- 5. 주요 활동 사진 -->
-            <div class="flex flex-1 min-h-[250px]">
-              <div class="w-32 bg-gray-50 flex items-center justify-center p-2 font-bold text-sm text-center border-r border-gray-300 shrink-0">
-                5. 주요 활동 사진
-              </div>
-              <div class="flex-1 p-4 flex flex-col items-center justify-center relative">
+            <div class="space-y-4 mt-8">
+                <!-- 플레이스홀더 텍스트 변경됨 -->
+                <input type="text" id="loginId" placeholder="아이디" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 bg-gray-50">
+                <input type="password" id="loginPw" placeholder="비밀번호" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 bg-gray-50">
                 
-                <div id="photoContainer" class="w-full h-full relative flex items-center justify-center group hidden">
-                  <img id="entryPhoto" src="" alt="활동 사진" class="max-w-full max-h-[300px] object-contain border border-gray-200 shadow-sm rounded">
-                  <div class="absolute top-2 right-2 flex gap-2 no-print opacity-0 group-hover:opacity-100 transition-opacity">
-                    <label class="cursor-pointer bg-white text-gray-700 p-2 rounded-full shadow hover:bg-gray-100">
-                      <i class="ph ph-image text-lg"></i>
-                      <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
-                    </label>
-                    <button onclick="removeImage()" class="bg-white text-red-600 p-2 rounded-full shadow hover:bg-gray-100">
-                      <i class="ph ph-trash text-lg"></i>
-                    </button>
-                  </div>
+                <div class="flex space-x-2 pt-2 border-t">
+                    <input type="text" id="studentId" placeholder="학번 (예: 10101)" class="w-1/2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 bg-gray-50">
+                    <input type="text" id="authorName" placeholder="이름 (예: 홍길동)" class="w-1/2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 bg-gray-50">
                 </div>
                 
-                <label id="uploadPrompt" class="w-full h-full border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-lg flex flex-col items-center justify-center text-gray-400 cursor-pointer transition-colors no-print bg-gray-50">
-                  <i class="ph ph-image text-4xl mb-2"></i>
-                  <span class="text-sm font-medium">클릭하여 사진 첨부하기</span>
-                  <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden">
-                </label>
-                
-              </div>
+                <button onclick="handleLogin()" id="loginBtn" class="w-full bg-red-700 text-white py-3 rounded-lg hover:bg-red-800 transition font-bold shadow-md mt-4">
+                    접속하기
+                </button>
+                <p id="loginError" class="text-red-500 text-sm text-center hidden font-medium"></p>
             </div>
-          </div>
+        </div>
+    </div>
+
+    <!-- 2. 탐구일지 작성 화면 (A4 사이즈) -->
+    <div id="mainScreen" class="hidden min-h-screen py-8 print:py-0 print:bg-white">
+        
+        <!-- 상단 컨트롤 패널 (인쇄 시 숨김) -->
+        <div class="max-w-[210mm] mx-auto flex justify-between items-center mb-4 print-hide px-4">
+            <div class="bg-white px-4 py-2 rounded-full shadow-sm text-sm font-bold text-red-700 border border-red-100">
+                작성자: <span id="currentUser" class="text-gray-800"></span>
+            </div>
+            <div class="space-x-2">
+                <button onclick="window.print()" class="bg-gray-800 text-white px-5 py-2 rounded-lg shadow hover:bg-gray-700 font-bold transition">🖨️ PDF 출력</button>
+                <button onclick="location.reload()" class="bg-white text-gray-600 border px-4 py-2 rounded-lg shadow-sm hover:bg-gray-50 transition">로그아웃</button>
+            </div>
         </div>
 
-        <!-- Footer 세일고 로고 -->
-        <div class="mt-8 flex justify-end items-center gap-3">
-          <h2 class="font-bold text-xl tracking-widest text-gray-800">세일고등학교</h2>
-          <img src="세일고CI-01.png" alt="세일고등학교 로고" class="w-14 h-14 object-contain" onerror="this.style.display='none'">
+        <!-- A4 용지 컨테이너 -->
+        <div class="a4-container bg-white shadow-2xl mx-auto p-[20mm] relative flex flex-col" style="width: 210mm; min-height: 297mm; box-sizing: border-box;">
+            
+            <!-- 문서 제목 -->
+            <div class="text-center mb-8 border-b-4 border-gray-800 pb-4">
+                <h1 class="text-4xl font-black tracking-widest text-gray-900">과학탐구일지</h1>
+            </div>
+
+            <!-- 입력 폼 시작 -->
+            <div class="space-y-6 text-[15px] flex-grow">
+                
+                <!-- 1. 기본 기록 -->
+                <div>
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-2 items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-gray-700 min-w-max">탐구 회차/일시:</span> 
+                            <input type="text" id="sessionDate" class="border-b-2 border-gray-300 w-full focus:outline-none focus:border-red-700 bg-transparent px-1" placeholder="[  ]일 차 / O월 O일 (시간: [ ]:[ ])">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-gray-700 min-w-max">환경 조건:</span> 
+                            기온 <input type="text" id="temp" class="border-b-2 border-gray-300 w-12 text-center focus:outline-none focus:border-red-700 bg-transparent" placeholder="">℃, 
+                            습도 <input type="text" id="humidity" class="border-b-2 border-gray-300 w-12 text-center focus:outline-none focus:border-red-700 bg-transparent" placeholder="">%
+                        </div>
+                        <div class="col-span-2 flex items-center space-x-2">
+                            <span class="font-bold text-gray-700 min-w-max">기타 특이사항:</span> 
+                            <input type="text" id="weather" class="border-b-2 border-gray-300 w-full focus:outline-none focus:border-red-700 bg-transparent px-1" placeholder="(날씨, 조명 상태 등)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 탐구 활동 내용 -->
+                <div>
+                    <h2 class="font-bold text-lg mb-2 flex items-center"><span class="bg-red-700 text-white w-6 h-6 rounded-full inline-flex items-center justify-center mr-2 text-sm">2</span>탐구 활동 내용</h2>
+                    <input type="text" id="activityContent" class="w-full border-b-2 border-gray-300 p-2 focus:outline-none focus:border-red-700" placeholder="오늘의 탐구 활동 내용을 한두 줄로 간략히 작성하세요.">
+                </div>
+
+                <!-- 3, 4, 5 항목 테이블 구조 -->
+                <table class="w-full border-collapse border-2 border-gray-800 table-fixed">
+                    <colgroup>
+                        <col class="w-1/4">
+                        <col class="w-3/4">
+                    </colgroup>
+                    <tbody>
+                        <!-- 3. 탐구 및 탐구 결과 -->
+                        <tr>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">
+                                3. 탐구 및<br><span class="pl-5">탐구 결과</span>
+                            </th>
+                            <td class="border border-gray-400 p-0">
+                                <textarea id="resultContent" class="w-full h-full min-h-[150px] p-3 focus:outline-none resize-none" placeholder="탐구 과정 및 결과를 상세히 기록하세요." oninput="autoResize(this)"></textarea>
+                            </td>
+                        </tr>
+                        <!-- 4. 특이사항 -->
+                        <tr>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">
+                                4. 특이사항
+                            </th>
+                            <td class="border border-gray-400 p-0">
+                                <textarea id="specialNote" class="w-full h-full min-h-[100px] p-3 focus:outline-none resize-none" placeholder="오차 원인, 새롭게 알게 된 점 등을 기록하세요." oninput="autoResize(this)"></textarea>
+                            </td>
+                        </tr>
+                        <!-- 5. 주요 활동 사진 -->
+                        <tr>
+                            <th class="border border-gray-400 p-3 bg-gray-100 text-left align-top text-lg font-bold text-gray-800">
+                                5. 주요 활동<br><span class="pl-5">사진</span>
+                            </th>
+                            <td class="border border-gray-400 p-3">
+                                <input type="file" id="photoInput" accept="image/*" class="mb-2 print-hide block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 cursor-pointer">
+                                <div id="photoPreview" class="w-full min-h-[220px] flex items-center justify-center border-2 border-dashed border-gray-300 bg-gray-50 overflow-hidden relative">
+                                    <span class="text-gray-400 print-hide">사진을 첨부하면 여기에 표시됩니다</span>
+                                    <img id="imageDisplay" class="absolute hidden max-w-full max-h-full object-contain">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 세일고등학교 로고 및 명칭 (홈페이지 화면 및 출력물 우측 하단 고정) -->
+            <div class="mt-8 flex justify-end items-center space-x-3 pt-4">
+                <img src="세일고CI-01.png" alt="세일고등학교 마크" class="w-10 h-10">
+                <span class="font-black text-2xl tracking-widest text-gray-900 font-serif">세일고등학교</span>
+            </div>
+
         </div>
-      </div>
+
+        <!-- 저장 버튼 (인쇄 시 숨김) -->
+        <div class="mt-8 text-center print-hide pb-10">
+            <button onclick="saveData()" id="saveBtn" class="bg-red-700 text-white px-10 py-4 rounded-xl font-bold shadow-lg hover:bg-red-800 transition text-lg flex items-center justify-center mx-auto">
+                <span id="saveBtnText">구글 스프레드시트에 저장하기</span>
+            </button>
+            <p id="saveMsg" class="mt-2 text-sm font-bold hidden"></p>
+        </div>
     </div>
-  </div>
 
-  <!-- 커스텀 알림 모달 -->
-  <div id="messageModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-    <div class="bg-white p-6 rounded-lg shadow-xl w-80 text-center">
-      <i class="ph-fill ph-info text-blue-500 text-4xl mb-3"></i>
-      <p id="messageText" class="text-gray-800 font-medium mb-6"></p>
-      <button onclick="closeMessage()" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 transition-colors">확인</button>
-    </div>
-  </div>
+    <script>
+        // ★★★ 여기에 선생님의 Google Apps Script 웹앱 URL을 붙여넣으세요 ★★★
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6vuo8ZXiNdsDFbUsARdodf1MzMpiqYcjwamyHln36wi71017wojlbxcn8lQMOP4hH/exec"; 
 
-  <!-- 로딩 오버레이 -->
-  <div id="loadingOverlay" class="hidden fixed inset-0 bg-white/70 flex items-center justify-center z-[90]">
-    <div class="flex flex-col items-center">
-      <i class="ph ph-spinner-gap animate-spin text-4xl text-red-700 mb-2"></i>
-      <span class="text-sm font-medium text-gray-700">처리 중...</span>
-    </div>
-  </div>
-
-  <script>
-    // 전역 상태 관리
-    const state = {
-      scriptUrl: '여기에_Google_Apps_Script_웹앱_URL을_입력하세요', // 프론트엔드 코드에 URL 고정
-      authorName: '',
-      entries: [],
-      activeId: null,
-      globalTopic: '',
-      photoUrl: ''
-    };
-
-    // UI 요소 참조
-    const els = {
-      loginScreen: document.getElementById('loginScreen'),
-      mainScreen: document.getElementById('mainScreen'),
-      entryList: document.getElementById('entryList'),
-      messageModal: document.getElementById('messageModal'),
-      messageText: document.getElementById('messageText'),
-      loading: document.getElementById('loadingOverlay'),
-      btnDelete: document.getElementById('btnDelete'),
-      
-      // Form fields
-      globalTopic: document.getElementById('globalTopic'),
-      round: document.getElementById('entryRound'),
-      date: document.getElementById('entryDate'),
-      timeH: document.getElementById('entryTimeH'),
-      timeM: document.getElementById('entryTimeM'),
-      temp: document.getElementById('entryTemp'),
-      humidity: document.getElementById('entryHumidity'),
-      weather: document.getElementById('entryWeather'),
-      content: document.getElementById('entryContent'),
-      results: document.getElementById('entryResults'),
-      notes: document.getElementById('entryNotes'),
-      photo: document.getElementById('entryPhoto'),
-      photoContainer: document.getElementById('photoContainer'),
-      uploadPrompt: document.getElementById('uploadPrompt'),
-    };
-
-    // 유틸: 커스텀 메시지창
-    function showMessage(msg) {
-      els.messageText.textContent = msg;
-      els.messageModal.classList.remove('hidden');
-    }
-    function closeMessage() {
-      els.messageModal.classList.add('hidden');
-    }
-    function showLoading(show) {
-      if(show) els.loading.classList.remove('hidden');
-      else els.loading.classList.add('hidden');
-    }
-
-    // 유틸: Textarea 자동 높이 조절
-    function resizeTextarea(el) {
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    }
-
-    // 사진 삭제
-    function removeImage() {
-      state.photoUrl = '';
-      els.photo.src = '';
-      els.photoContainer.classList.add('hidden');
-      els.uploadPrompt.classList.remove('hidden');
-    }
-
-    // 사진 압축 및 업로드 (스프레드시트 셀 용량 제한 방지)
-    function handleImageUpload(e) {
-      const file = e.target.files[0];
-      if(!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          
-          // 최대 해상도 제한 (가로/세로 최대 800px)
-          const MAX_SIZE = 800;
-          if (width > height && width > MAX_SIZE) {
-            height *= MAX_SIZE / width;
-            width = MAX_SIZE;
-          } else if (height > MAX_SIZE) {
-            width *= MAX_SIZE / height;
-            height = MAX_SIZE;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // 품질 0.7 수준의 JPEG로 압축하여 base64 문자열 생성
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          
-          state.photoUrl = compressedDataUrl;
-          els.photo.src = compressedDataUrl;
-          els.uploadPrompt.classList.add('hidden');
-          els.photoContainer.classList.remove('hidden');
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // 로그인 처리 (스프레드시트에 검증 요청)
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      if (!state.scriptUrl || state.scriptUrl === '여기에_Google_Apps_Script_웹앱_URL을_입력하세요') {
-        showMessage("프론트엔드 코드(index.html) 내부의 scriptUrl 값에 Apps Script 웹앱 URL을 먼저 설정해주세요.");
-        return;
-      }
-
-      const id = document.getElementById('loginId').value.trim();
-      const pw = document.getElementById('loginPw').value.trim();
-      const studentId = document.getElementById('studentId').value.trim();
-      const name = document.getElementById('authorName').value.trim();
-
-      // 학번과 이름을 결합하여 작성자명으로 사용
-      state.authorName = `${studentId} ${name}`;
-      showLoading(true);
-
-      try {
-        const response = await fetch(state.scriptUrl, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'login', id: id, password: pw }),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          els.loginScreen.classList.add('hidden');
-          els.mainScreen.classList.remove('hidden');
-          document.getElementById('displayAuthor').textContent = `접속자: ${state.authorName}`;
-          fetchData(); // 데이터 불러오기
-        } else {
-          showMessage(result.error || "로그인에 실패했습니다.");
+        // 자동 높이 조절 함수
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
         }
-      } catch (err) {
-        console.error(err);
-        showMessage("네트워크 오류가 발생했습니다. URL이 올바른지 확인하세요.");
-      } finally {
-        showLoading(false);
-      }
-    });
 
-    // 데이터 불러오기
-    async function fetchData() {
-      showLoading(true);
-      try {
-        const response = await fetch(state.scriptUrl);
-        const result = await response.json();
-        
-        if(result.success) {
-          state.globalTopic = result.data.topic || '';
-          els.globalTopic.value = state.globalTopic;
-          state.entries = result.data.entries || [];
-          renderList();
-          clearForm();
+        // 로그인 처리
+        async function handleLogin() {
+            const id = document.getElementById('loginId').value;
+            const pw = document.getElementById('loginPw').value;
+            const stuId = document.getElementById('studentId').value;
+            const name = document.getElementById('authorName').value;
+            const errorMsg = document.getElementById('loginError');
+            const btnText = document.getElementById('loginBtn');
+
+            if (!id || !pw || !stuId || !name) {
+                errorMsg.textContent = "모든 항목(아이디, 비밀번호, 학번, 이름)을 입력해주세요.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            errorMsg.classList.add('hidden');
+            btnText.textContent = "확인 중...";
+            btnText.disabled = true;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams({ action: 'login', id: id, pw: pw })
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    // 로그인 성공 시 화면 전환
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainScreen').classList.remove('hidden');
+                    document.getElementById('currentUser').textContent = `${stuId} ${name}`;
+                } else {
+                    errorMsg.textContent = "아이디 또는 비밀번호가 일치하지 않습니다.";
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorMsg.textContent = "서버 연결에 실패했습니다. (URL을 확인해주세요)";
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btnText.textContent = "접속하기";
+                btnText.disabled = false;
+            }
         }
-      } catch (err) {
-        console.error(err);
-        showMessage("데이터를 불러오는 중 오류가 발생했습니다.");
-      } finally {
-        showLoading(false);
-      }
-    }
 
-    // 주제 실시간 저장
-    els.globalTopic.addEventListener('change', async (e) => {
-      const topic = e.target.value;
-      state.globalTopic = topic;
-      try {
-        await fetch(state.scriptUrl, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'saveTopic', topic: topic }),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        // 이미지 압축 및 미리보기 로직
+        let compressedImageData = "";
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height = Math.round((height * MAX_WIDTH) / width);
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 용량 최적화를 위해 JPEG 품질 0.7로 압축
+                    compressedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    // 화면에 이미지 표시
+                    const imgDisplay = document.getElementById('imageDisplay');
+                    imgDisplay.src = compressedImageData;
+                    imgDisplay.classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         });
-      } catch (err) { console.error(err); }
-    });
 
-    // 목록 렌더링
-    function renderList() {
-      els.entryList.innerHTML = '';
-      if(state.entries.length === 0) {
-        els.entryList.innerHTML = '<p class="text-center text-gray-400 py-4 text-sm">작성된 일지가 없습니다.</p>';
-        return;
-      }
-      
-      state.entries.forEach(entry => {
-        const div = document.createElement('div');
-        const isActive = state.activeId === entry.ID;
-        div.className = `p-3 rounded-lg cursor-pointer border transition-colors ${isActive ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100 hover:bg-gray-50'}`;
-        div.onclick = () => loadEntry(entry);
-        
-        div.innerHTML = `
-          <div class="font-medium text-sm text-gray-800 truncate">${entry.Date ? entry.Date + ' 탐구' : '날짜 미지정'}</div>
-          <div class="text-xs text-gray-500 mt-1">${entry.Author} 작성</div>
-        `;
-        els.entryList.appendChild(div);
-      });
-    }
+        // 데이터 저장
+        async function saveData() {
+            const btn = document.getElementById('saveBtn');
+            const msg = document.getElementById('saveMsg');
+            
+            btn.textContent = "저장 중...";
+            btn.disabled = true;
+            msg.classList.add('hidden');
 
-    // 폼 초기화 (새 작성)
-    function clearForm() {
-      state.activeId = null;
-      els.round.value = ''; els.date.value = ''; els.timeH.value = ''; els.timeM.value = '';
-      els.temp.value = ''; els.humidity.value = ''; els.weather.value = '';
-      els.content.value = ''; els.results.value = ''; els.notes.value = '';
-      removeImage();
-      els.btnDelete.classList.add('hidden');
-      
-      // 높이 리셋
-      [els.content, els.results, els.notes].forEach(el => el.style.height = 'auto');
-      renderList();
-    }
-    document.getElementById('btnNew').addEventListener('click', clearForm);
+            const data = {
+                action: 'save',
+                author: document.getElementById('currentUser').textContent,
+                sessionDate: document.getElementById('sessionDate').value,
+                temp: document.getElementById('temp').value,
+                humidity: document.getElementById('humidity').value,
+                weather: document.getElementById('weather').value,
+                activityContent: document.getElementById('activityContent').value,
+                resultContent: document.getElementById('resultContent').value,
+                specialNote: document.getElementById('specialNote').value,
+                photo: compressedImageData
+            };
 
-    // 항목 불러오기
-    function loadEntry(entry) {
-      state.activeId = entry.ID;
-      els.round.value = entry.Round || '';
-      els.date.value = entry.Date || '';
-      els.timeH.value = entry.TimeHour || '';
-      els.timeM.value = entry.TimeMinute || '';
-      els.temp.value = entry.Temp || '';
-      els.humidity.value = entry.Humidity || '';
-      els.weather.value = entry.Weather || '';
-      els.content.value = entry.Content || '';
-      els.results.value = entry.Results || '';
-      els.notes.value = entry.Notes || '';
-      
-      if(entry.PhotoUrl) {
-        state.photoUrl = entry.PhotoUrl;
-        els.photo.src = entry.PhotoUrl;
-        els.uploadPrompt.classList.add('hidden');
-        els.photoContainer.classList.remove('hidden');
-      } else {
-        removeImage();
-      }
-      
-      els.btnDelete.classList.remove('hidden');
-      
-      // 텍스트에어리어 높이 맞춤
-      setTimeout(() => {
-        resizeTextarea(els.content);
-        resizeTextarea(els.results);
-        resizeTextarea(els.notes);
-      }, 50);
-
-      renderList();
-    }
-
-    // 데이터 저장
-    document.getElementById('btnSave').addEventListener('click', async () => {
-      showLoading(true);
-      const data = {
-        action: 'saveEntry',
-        id: state.activeId,
-        authorName: state.authorName,
-        round: els.round.value,
-        date: els.date.value,
-        timeHour: els.timeH.value,
-        timeMinute: els.timeM.value,
-        temp: els.temp.value,
-        humidity: els.humidity.value,
-        weather: els.weather.value,
-        content: els.content.value,
-        results: els.results.value,
-        notes: els.notes.value,
-        photoUrl: state.photoUrl
-      };
-
-      try {
-        const response = await fetch(state.scriptUrl, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        const result = await response.json();
-        if(result.success) {
-          showMessage("저장되었습니다.");
-          await fetchData();
-        } else {
-          showMessage("저장 실패: " + result.error);
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    msg.textContent = "구글 스프레드시트에 성공적으로 저장되었습니다!";
+                    msg.className = "mt-2 text-sm font-bold text-green-600 block";
+                } else {
+                    throw new Error("저장 실패");
+                }
+            } catch (error) {
+                msg.textContent = "저장 중 오류가 발생했습니다. 다시 시도해주세요.";
+                msg.className = "mt-2 text-sm font-bold text-red-600 block";
+            } finally {
+                btn.textContent = "구글 스프레드시트에 저장하기";
+                btn.disabled = false;
+            }
         }
-      } catch (err) {
-        console.error(err);
-        showMessage("오류가 발생했습니다.");
-      } finally {
-        showLoading(false);
-      }
-    });
-
-    // 데이터 삭제
-    els.btnDelete.addEventListener('click', async () => {
-      if(!state.activeId) return;
-      if(!confirm("정말 이 기록을 삭제하시겠습니까?")) return; // 커스텀 모달 외 예외적 허용 또는 모달 대체 가능. (내부 규칙상 가급적 피함)
-
-      showLoading(true);
-      try {
-        const response = await fetch(state.scriptUrl, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'deleteEntry', id: state.activeId }),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        });
-        const result = await response.json();
-        if(result.success) {
-          showMessage("삭제되었습니다.");
-          clearForm();
-          await fetchData();
-        }
-      } catch (err) {
-        showMessage("삭제 중 오류가 발생했습니다.");
-      } finally {
-        showLoading(false);
-      }
-    });
-
-  </script>
+    </script>
 </body>
 </html>
